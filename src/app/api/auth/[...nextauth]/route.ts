@@ -1,12 +1,16 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-// NextAuth authorize() runs server-to-server — calls the backend directly.
-// No CORS issue. No proxy needed. No Vercel protection issue (server-to-server
-// requests with no browser origin are allowed through by Vercel protection).
-const BACKEND_URL =
-  process.env.BACKEND_URL ||
-  "https://fitforge-backend-md-ahsan-habibs-projects-f65cbd92.vercel.app";
+// authorize() runs server-side on Vercel.
+// We call our own proxy (/api/backend/auth/login) which:
+//   1. runs server-to-server (no CORS)
+//   2. injects x-vercel-protection-bypass header automatically
+// NEXTAUTH_URL must be set in Vercel env vars so this absolute URL resolves.
+function getLoginUrl(): string {
+  const base =
+    process.env.NEXTAUTH_URL || "https://fitforge-frontend-ten.vercel.app";
+  return `${base}/api/backend/auth/login`;
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -21,29 +25,33 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Please enter both email and password");
         }
 
-        const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: credentials.email,
-            password: credentials.password,
-          }),
-        });
+        try {
+          const response = await fetch(getLoginUrl(), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+            }),
+          });
 
-        const res = await response.json().catch(() => null);
+          const res = await response.json().catch(() => null);
 
-        if (!response.ok || !res?.success) {
-          throw new Error(res?.message || "Invalid email or password");
+          if (!response.ok || !res?.success) {
+            throw new Error(res?.message || "Invalid email or password");
+          }
+
+          return {
+            id: res.data.user.id,
+            email: res.data.user.email,
+            name: res.data.user.name,
+            role: res.data.user.role,
+            accessToken: res.data.accessToken,
+            refreshToken: res.data.refreshToken,
+          } as any;
+        } catch (err: any) {
+          throw new Error(err.message || "Login failed. Please try again.");
         }
-
-        return {
-          id: res.data.user.id,
-          email: res.data.user.email,
-          name: res.data.user.name,
-          role: res.data.user.role,
-          accessToken: res.data.accessToken,
-          refreshToken: res.data.refreshToken,
-        } as any;
       },
     }),
   ],

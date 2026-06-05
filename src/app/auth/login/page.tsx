@@ -1,34 +1,41 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import { Mail, Lock, Sparkles, ArrowRight, UserCheck, AlertCircle } from 'lucide-react';
+import React, { useState } from "react";
+import Link from "next/link";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import {
+  Mail,
+  Lock,
+  Sparkles,
+  ArrowRight,
+  UserCheck,
+  AlertCircle,
+} from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      setError('Please fill in all credentials fields.');
+      setError("Please fill in all credentials fields.");
       return;
     }
 
     setLoading(true);
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     try {
-      const res = await signIn('credentials', {
+      const res = await signIn("credentials", {
         email,
         password,
         redirect: false,
@@ -38,30 +45,33 @@ export default function LoginPage() {
         throw new Error(res.error);
       }
 
-      setSuccess('Access granted. Redirecting to Athlete Workspace...');
+      setSuccess("Access granted. Redirecting to Athlete Workspace...");
       setTimeout(() => {
-        router.push('/dashboard');
+        router.push("/dashboard");
         router.refresh();
       }, 1000);
     } catch (err: any) {
-      setError(err.message || 'Authentication failed. Please verify credentials.');
+      setError(
+        err.message || "Authentication failed. Please verify credentials.",
+      );
       setLoading(false);
     }
   };
 
-  const handleQuickLogin = async (role: 'user' | 'admin') => {
-    setError('');
-    setSuccess('');
+  const handleQuickLogin = async (role: "user" | "admin") => {
+    setError("");
+    setSuccess("");
     setLoading(true);
 
-    const demoEmail = role === 'user' ? 'user@fitforge.com' : 'admin@fitforge.com';
-    const demoPassword = '123456';
+    const demoEmail =
+      role === "user" ? "user@fitforge.com" : "admin@fitforge.com";
+    const demoPassword = role === "user" ? "123456" : "Admin123";
 
     setEmail(demoEmail);
     setPassword(demoPassword);
 
     try {
-      const res = await signIn('credentials', {
+      const res = await signIn("credentials", {
         email: demoEmail,
         password: demoPassword,
         redirect: false,
@@ -71,13 +81,17 @@ export default function LoginPage() {
         throw new Error(res.error);
       }
 
-      setSuccess(`Autofilled and authenticated as Demo ${role.toUpperCase()}. Redirecting...`);
+      setSuccess(
+        `Autofilled and authenticated as Demo ${role.toUpperCase()}. Redirecting...`,
+      );
       setTimeout(() => {
-        router.push(role === 'admin' ? '/dashboard/admin/analytics' : '/dashboard');
+        router.push(
+          role === "admin" ? "/dashboard/admin/analytics" : "/dashboard",
+        );
         router.refresh();
       }, 1000);
     } catch (err: any) {
-      setError(err.message || 'Demo authentication failed.');
+      setError(err.message || "Demo authentication failed.");
       setLoading(false);
     }
   };
@@ -135,7 +149,10 @@ export default function LoginPage() {
                   <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     Password
                   </label>
-                  <Link href="/auth/forgot" className="text-xs text-primary hover:underline">
+                  <Link
+                    href="/auth/forgot"
+                    className="text-xs text-primary hover:underline"
+                  >
                     Forgot Password?
                   </Link>
                 </div>
@@ -157,7 +174,8 @@ export default function LoginPage() {
                 disabled={loading}
                 className="w-full py-3 px-4 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/95 transition-all shadow-md shadow-primary/20 hover:scale-[1.01] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer text-sm"
               >
-                {loading ? 'Authenticating...' : 'Sign In'} <ArrowRight className="h-4 w-4" />
+                {loading ? "Authenticating..." : "Sign In"}{" "}
+                <ArrowRight className="h-4 w-4" />
               </button>
             </form>
 
@@ -166,7 +184,9 @@ export default function LoginPage() {
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Demo Autofill Keys</span>
+                <span className="bg-card px-2 text-muted-foreground">
+                  Demo Autofill Keys
+                </span>
               </div>
             </div>
 
@@ -174,7 +194,7 @@ export default function LoginPage() {
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => handleQuickLogin('user')}
+                onClick={() => handleQuickLogin("user")}
                 disabled={loading}
                 className="py-2.5 px-3 rounded-xl border border-border text-xs font-semibold hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center gap-1.5 cursor-pointer"
               >
@@ -182,7 +202,7 @@ export default function LoginPage() {
               </button>
               <button
                 type="button"
-                onClick={() => handleQuickLogin('admin')}
+                onClick={() => handleQuickLogin("admin")}
                 disabled={loading}
                 className="py-2.5 px-3 rounded-xl border border-border text-xs font-semibold hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center gap-1.5 cursor-pointer"
               >
@@ -192,8 +212,11 @@ export default function LoginPage() {
           </div>
 
           <p className="text-center text-xs text-muted-foreground">
-            Don't have an athlete account?{' '}
-            <Link href="/auth/register" className="text-primary hover:underline font-bold">
+            Don't have an athlete account?{" "}
+            <Link
+              href="/auth/register"
+              className="text-primary hover:underline font-bold"
+            >
               Forge Account Free
             </Link>
           </p>
